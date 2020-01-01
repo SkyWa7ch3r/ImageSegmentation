@@ -17,7 +17,7 @@ The models that will be trained and tested against will be:
 ### U-Net 
 Following this github repo here: https://github.com/zhixuhao/unet <br>
 Which was inspired by the paper found here:https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/ <br>
-I will reimplement U-Net in TF 2.0 which will be easier than others due to its use of TF and Keras already, it's just going to be a matter of using the same functions in TF 2.0. Looking at the repository, no pretrained weights were used in the calling of the unet function, however 'unet_membrane.hdf5' was used to grab a checkpoint using weights from this model. The same will be done here. This model was chosen due to its design for use on small datasets using Transfer Learning to do most of the work. The model was also chosen due to it being an old model that won the 2015 ISIBI Challenge.
+I will reimplement U-Net in TF 2.0 which will be easier than others due to its use of TF and Keras already, it's just going to be a matter of using the same functions in TF 2.0. Looking at the repository, no pretrained weights were used in the calling of the unet function. Some pretrained weights were used for the github, but this model isn't supplied in the github repo, as such will likely train from scratch. The model was chosen due to it being an old model that won the 2015 ISIBI Challenge, it's also the most common example of Semantic Segmentation due to its small size compared to its modern day ResNet competitors.
 ### Bayesian SegNet
 Following this github repo here: https://github.com/toimcio/SegNet-tensorflow <br>
 Which was inspired by the paper found here: https://arxiv.org/abs/1511.02680 <br>
