@@ -72,10 +72,10 @@ def pyramid_pooling_block(input_tensor, bin_sizes):
 
   return tf.keras.layers.concatenate(concat_list)
 
-def model():
+def model(num_classes=19, input_size=(512, 1024, 3)):
 
   # Input Layer
-  input_layer = tf.keras.layers.Input(shape=(512, 1024, 3), name = 'input_layer')
+  input_layer = tf.keras.layers.Input(shape=input_size, name = 'input_layer')
 
   ## Step 1: Learning to DownSample
   lds_layer = conv_block(input_layer, 'conv', 32, (3, 3), strides = (2, 2))
@@ -112,16 +112,14 @@ def model():
   classifier = tf.keras.activations.relu(classifier)
 
 
-  classifier = conv_block(classifier, 'conv', 3, (1, 1), strides=(1, 1), padding='same', relu=False)
+  classifier = conv_block(classifier, 'conv', num_classes, (1, 1), strides=(1, 1), padding='same', relu=False)
 
   classifier = tf.keras.layers.Dropout(0.3)(classifier)
 
   classifier = tf.keras.layers.UpSampling2D((8, 8))(classifier)
-  print("Before Cast: {}".format(classifier.dtype))
   #Since its likely that mixed precision training is used, make sure softmax is float32
   classifier = tf.dtypes.cast(classifier, tf.float32)
   classifier = tf.keras.activations.softmax(classifier)
-  print("After Cast: {}".format(classifier.dtype))
 
   fast_scnn = tf.keras.Model(inputs = input_layer , outputs = classifier, name = 'Fast_SCNN')
 
