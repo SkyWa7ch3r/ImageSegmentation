@@ -130,3 +130,6 @@ dmypy.json
 
 #Tensorflow Checkpoints
 *.hdf5
+
+#Logs
+logs/fastscnn/*/*

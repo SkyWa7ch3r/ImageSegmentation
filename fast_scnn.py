@@ -112,7 +112,7 @@ def model():
   classifier = tf.keras.activations.relu(classifier)
 
 
-  classifier = conv_block(classifier, 'conv', 3, (1, 1), strides=(1, 1), padding='same', relu=False)
+  classifier = conv_block(classifier, 'conv', 19, (1, 1), strides=(1, 1), padding='same', relu=False)
 
   classifier = tf.keras.layers.Dropout(0.3)(classifier)
 
