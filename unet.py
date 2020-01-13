@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 
-def unet(num_classes=19, input_size=(1024,1024,3)):
+def model(num_classes=19, input_size=(1024,1024,3)):
     ### Beginning of encoder ###
     inputs = keras.Input(input_size)
     # 

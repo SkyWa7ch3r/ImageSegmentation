@@ -40,7 +40,7 @@ def get_conv_layers_for_vgg16(model):
         i+=1
     return indexes
 
-def conv_layer(input_tensor, channels):
+def conv_layer(input_tensor, channels, weight_decay=0.0005):
     """
     A convolution block which contains a convolution.
     Then a Batch Normalization.
@@ -51,7 +51,11 @@ def conv_layer(input_tensor, channels):
     :param training: Defaults as True, mainly for Batch, if validation
     """
     #Do the Convolution
-    conv = keras.layers.Conv2D(channels, 3, padding='same')(input_tensor)
+    conv = keras.layers.Conv2D(channels, 
+                               3, 
+                               padding='same', 
+                               kernel_regularizer=keras.regularizers.l2(weight_decay), 
+                               bias_regularizer=keras.regularizers.l2(weight_decay))(input_tensor)
     #Do a Batch Normalization
     norm = keras.layers.BatchNormalization()(conv)
     #Then a ReLU activation
@@ -59,7 +63,7 @@ def conv_layer(input_tensor, channels):
     #Return the result of the block
     return relu
 
-def bayes_segnet(batch_size, num_classes, input_size=(1024,1024,3), pool=(2,2)):
+def model(num_classes=19, input_size=(1024,1024,3), pool=(2,2)):
     '''
     In the original github repo here, https://github.com/toimcio/SegNet-tensorflow/blob/master/SegNet.py
     Here I will mix keras and tf.nn layers to produce the same model. Using parts of the github repo above
