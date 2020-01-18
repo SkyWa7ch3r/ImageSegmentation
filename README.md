@@ -1,4 +1,4 @@
-# SceneSegmentation
+# ImageSegmentation
 This project is a part of the Pawsey Summer Internship where I will do test multiple semantic segmentation algorithms and models on their training and inference time. To do this TensorFlow 2.0 (TF 2.0) will be used benchmark them against one another primarily on the Cityscapes Dataset. The main goal is to asceertain the usefulness of these models for Critical Infrastructure like railways, buildings roads etc. Their inference times will likely be assessed on a smaller machine like the NVIDIA Jetson AGX to assess their real-time practical use. This makes Cityscapes a perfect dataset to benchmark on. Reimplementing certain models will be easier than others, while some will be difficult as they were made in PyTorch or much older versions of TF.
 
 Furthermore, with the rise of Panoptic Segmentation in 2019 if time allows, some investigation of Panoptic Segmentation models will also be attempted to assess their real-time practical use.
@@ -20,12 +20,15 @@ Which was inspired by the paper found here:https://lmb.informatik.uni-freiburg.d
 I will reimplement U-Net in TF 2.0 which will be easier than others due to its use of TF and Keras already, it's just going to be a matter of using the same functions in TF 2.0. Looking at the repository, no pretrained weights were used in the calling of the unet function. Some pretrained weights were used for the github, but this model isn't supplied in the github repo, as such will likely train from scratch. The model was chosen due to it being an old model that won the 2015 ISIBI Challenge, it's also the most common example of Semantic Segmentation due to its small size compared to its modern day ResNet competitors.
 ### Bayesian SegNet
 Following this github repo here: https://github.com/toimcio/SegNet-tensorflow <br>
+Following this github repo here: https://github.com/yselivonchyk/Tensorflow_WhatWhereAutoencoder/blob/master/pooling.py
 Which was inspired by the paper found here: https://arxiv.org/abs/1511.02680 <br>
 Reimplementing this in TF2.0 should be ok, the author has done it in pure TF, redoing it in Keras will likely make it easier to understand. This model was chosen due to its use of VGG16 trained on ImageNet, this model was also the last hurrah of the standard Encoder-Decoder architecture which essentially mirrored the VGG16 model topping benchmarks in 2017. Trying this on the Cityscapes dataset and comparing it to newer models should show har far we have come.
 ### DeepLabV3+
 Following this github repo here: https://github.com/rishizek/tensorflow-deeplab-v3-plus <br>
+Following this github repo here: https://github.com/bonlime/keras-deeplab-v3-plus <br>
+Following this github repo here: https://github.com/srihari-humbarwadi/DeepLabV3_Plus-Tensorflow2.0
 Which was inspired by this paper found here: https://arxiv.org/abs/1802.02611 <br>
-One of the many models which used atrous convolution on a ResNet-101 pre-trained from ImageNet, it beat the previous DeepLabV3 and PSPNet which employed very similar architectures for semantic segmentation. It was chosen as it seems like a good representation of this type of model. Using this on Cityscapes will be more like reporducing the results from the original paper. This will show if TF 2.0 and the use of TensorRT makes any difference to the accuracy of the model (it shouldn't really, just make training faster). Overall this will add to the validity of this benchmark.
+One of the many models which used Atrous Spatial Pyramid Pooling (ASPP), it beat the previous DeepLabV3 and PSPNet which employed very similar architectures for semantic segmentation. It actually uses a modified Xception as its backbone, with an encoder featuring the ASPP with a novel decoder. It was chosen as it seems like a good representation of this type of model. Using this on Cityscapes will be more like reporducing the results from the original paper. This will show if TF 2.0 and the use of TensorRT makes any difference to the accuracy of the model (it shouldn't really, just make training faster). Overall this will add to the validity of this benchmark.
 ### Fast-SCNN
 Following this github repo here: https://github.com/kshitizrimal/Fast-SCNN <br>
 Which was inspired by this paper found here: https://arxiv.org/abs/1902.04502 <br>
