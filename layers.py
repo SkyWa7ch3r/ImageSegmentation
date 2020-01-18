@@ -143,6 +143,15 @@ class MaxPoolingWithArgmax2D(Layer):
 
     def compute_mask(self, inputs, mask=None):
         return 2 * [None]
+    
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'padding' : self.padding,
+            'pool_size' : self.pool_size,
+            'strides' : self.strides,
+        })
+        return config
 
 
 class MaxUnpooling2D(Layer):
@@ -164,3 +173,10 @@ class MaxUnpooling2D(Layer):
             mask_shape[2] * self.up_size[1],
             mask_shape[3]
         )
+    
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'up_size' : self.up_size,
+        })
+        return config

@@ -9,19 +9,23 @@ GitHub: https://github.com/kshitizrimal/Fast-SCNN
 Slightly modified for use to enable the calling of the model
 from the python file. Mostly moved things around so they sit inside of 
 a function.
+
+Also noticed that no weight decay was used? As per the original article
+its a weight decay (or l2 regularizer) of 0.00004 for standard convolutions
+with none applied to depthwise convolutions.
 """
 
-# !pip install tensorflow-gpu==2.0.0-alpha0
 
 import tensorflow as tf
+from tensorflow import keras
 
 #### Custom function for conv2d: conv_block
-def conv_block(inputs, conv_type, kernel, kernel_size, strides, padding='same', relu=True):
+def conv_block(inputs, conv_type, kernel, kernel_size, strides, padding='same', relu=True, reg=keras.regularizers.l2(0.00004)):
   
   if(conv_type == 'ds'):
     x = tf.keras.layers.SeparableConv2D(kernel, kernel_size, padding=padding, strides = strides)(inputs)
   else:
-    x = tf.keras.layers.Conv2D(kernel, kernel_size, padding=padding, strides = strides)(inputs)  
+    x = tf.keras.layers.Conv2D(kernel, kernel_size, padding=padding, strides = strides, kernel_regularizer=reg, bias_regularizer=reg)(inputs)  
   
   x = tf.keras.layers.BatchNormalization()(x)
   
@@ -58,14 +62,14 @@ def bottleneck_block(inputs, filters, kernel, t, strides, n):
 
   return x    
 
-def pyramid_pooling_block(input_tensor, bin_sizes):
+def pyramid_pooling_block(input_tensor, bin_sizes, input_size):
   concat_list = [input_tensor]
-  w = 16
-  h = 32
+  w = input_size[0] // 32
+  h = input_size[1] // 32
 
   for bin_size in bin_sizes:
     x = tf.keras.layers.AveragePooling2D(pool_size=(w//bin_size, h//bin_size), strides=(w//bin_size, h//bin_size))(input_tensor)
-    x = tf.keras.layers.Conv2D(128, 3, 2, padding='same')(x)
+    x = tf.keras.layers.Conv2D(128, 3, 2, padding='same',kernel_regularizer=keras.regularizers.l2(0.00004), bias_regularizer=keras.regularizers.l2(0.00004))(x)
     x = tf.keras.layers.Lambda(lambda x: tf.image.resize(x, (w,h)))(x)
 
     concat_list.append(x)
@@ -86,7 +90,7 @@ def model(num_classes=19, input_size=(512, 1024, 3)):
   gfe_layer = bottleneck_block(lds_layer, 64, (3, 3), t=6, strides=2, n=3)
   gfe_layer = bottleneck_block(gfe_layer, 96, (3, 3), t=6, strides=2, n=3)
   gfe_layer = bottleneck_block(gfe_layer, 128, (3, 3), t=6, strides=1, n=3)
-  gfe_layer = pyramid_pooling_block(gfe_layer, [2,4,6,8])
+  gfe_layer = pyramid_pooling_block(gfe_layer, [2,4,6,8], input_size)
 
   """## Step 3: Feature Fusion"""
   ff_layer1 = conv_block(lds_layer, 'conv', 128, (1,1), padding='same', strides= (1,1), relu=False)
@@ -95,7 +99,9 @@ def model(num_classes=19, input_size=(512, 1024, 3)):
   ff_layer2 = tf.keras.layers.DepthwiseConv2D((3,3), strides=(1, 1), depth_multiplier=1, padding='same')(ff_layer2)
   ff_layer2 = tf.keras.layers.BatchNormalization()(ff_layer2)
   ff_layer2 = tf.keras.activations.relu(ff_layer2)
-  ff_layer2 = tf.keras.layers.Conv2D(128, 1, 1, padding='same', activation=None)(ff_layer2)
+  ff_layer2 = tf.keras.layers.Conv2D(128, 1, 1, padding='same', activation=None,
+                                     kernel_regularizer=keras.regularizers.l2(0.00004), 
+                                     bias_regularizer=keras.regularizers.l2(0.00004))(ff_layer2)
 
   ff_final = tf.keras.layers.add([ff_layer1, ff_layer2])
   ff_final = tf.keras.layers.BatchNormalization()(ff_final)

@@ -135,3 +135,8 @@ dmypy.json
 *.csv
 *tfevents*
 local.trace*
+
+#tar.gz
+*.tar.*
+
+/logs/*/qualitative_results
