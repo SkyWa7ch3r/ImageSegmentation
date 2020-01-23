@@ -2,6 +2,7 @@
 import cityscapesscripts.helpers.labels as labels
 import numpy as np
 import matplotlib.image as Image
+import matplotlib.pyplot as plt
 from datetime import datetime
 import argparse
 import sys
