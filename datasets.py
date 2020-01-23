@@ -98,6 +98,8 @@ def augment(image, label, target_size=(1024, 1024, 3), classes=19):
     label_transformed = tf.cast(stacked_images[..., num_image_channels:], dtype=label.dtype)
     #Resize the label
     label_transformed = tf.image.resize(label_transformed, (target_size[0], target_size[1]), method='nearest')
+    #Clip the 255 values down to 19
+    label_transformed = tf.clip_by_value(label_transformed, 0, 19)
     #One Hot encode the label
     label_transformed = tf.one_hot(label_transformed, classes,dtype=tf.int32)
     #Reshape it so its shape is [target_size[0], target_size[1], classes]
@@ -131,15 +133,18 @@ def parse_function(image, label, target_size=(1024, 1024, 3), training=True, cla
     
     #Convert the image to float32 and scale all values between 0 and 1
     image = tf.image.convert_image_dtype(image, tf.float32)
+    label = tf.cast(label, tf.int32)
     
     #If training, then do augmentation
     if training:
-        image, label = augment(image, label, target_size=target_size)
+        image, label = augment(image, label, target_size=target_size, classes=classes)
     #Otherwise, its a test or validation set
     else:
         #Resize the image and label for the model
         image = tf.image.resize(image, (target_size[0], target_size[1]), method='nearest')
         label = tf.image.resize(label, (target_size[0], target_size[1]), method='nearest')
+        #Clip the 255 values down to 19
+        label = tf.clip_by_value(label, 0, 19)
         #One hot the label, ready to determine the loss
         label = tf.one_hot(label, classes, dtype=tf.int32)
         #Reshape it so its shape is [target_size[0], target_size[1], classes]
@@ -147,7 +152,7 @@ def parse_function(image, label, target_size=(1024, 1024, 3), training=True, cla
     #Return the image and label as tensors
     return image, label
 
-def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True, coarse=False):
+def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True, coarse=False, classes=19):
     if train and not coarse:
         images = get_cityscapes_files(cityscapes_root, 'leftImg8bit', 'train', 'leftImg8bit')
         labels = get_cityscapes_files(cityscapes_root, 'gtFine', 'train', 'labelTrainIds')
@@ -160,7 +165,7 @@ def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True,
     #Shuffle the data
     ds = ds.shuffle(len(images))
     #Map the parsing function using partial to pass through arguments
-    ds = ds.map(partial(parse_function, target_size=target_size, training=train), num_parallel_calls=NUM_THREADS)
+    ds = ds.map(partial(parse_function, target_size=target_size, training=train, classes=classes), num_parallel_calls=NUM_THREADS)
     #Set the batch size
     ds = ds.batch(batch_size)
     #Repeat the above for numbe of epochs
