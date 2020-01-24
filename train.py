@@ -266,20 +266,12 @@ with strategy.scope():
                 #Save the Image
                 Image.imsave(images_dir+'/epoch_{}.png'.format(epoch), image_to_save.astype(np.uint8), dpi=300)
 
-        #Custom Callback to save a prediction every epoch
-        class print_classIoU(keras.callbacks.Callback):
-            def on_epoch_end(self, epoch, logs=None):
-                print(csMeanIoU.cm_)
-                
-
-
         #The callbacks, has early stopping, logs almost everything, and saves the best weights as the model trains, in theory last weights is best
         callbacks=[
             keras.callbacks.CSVLogger(csv_dir+'/log.csv'),
             keras.callbacks.TensorBoard(log_dir=logs_dir),
             keras.callbacks.ModelCheckpoint(logs_dir+'/weights-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}-'+time+'.hdf5', 'val_loss', mode='min', save_best_only=True),
             prediction_on_epoch(target_size),
-            print_classIoU(),
         ]
 
         #Set the number of steps per epoch
