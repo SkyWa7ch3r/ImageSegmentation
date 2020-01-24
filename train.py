@@ -15,8 +15,14 @@ import datasets
 
 #----------CONSTANTS----------#
 CITYSCAPES_LABELS = [label for label in labels.labels if -1 < label.trainId < 255]
+#Add unlabeled
+CITYSCAPES_LABELS.append(labels.labels[0])
+#Get all the colors
 CITYSCAPES_COLORS = [label.color for label in CITYSCAPES_LABELS]
+#Get the IDS
 CITYSCAPES_IDS = [label.trainId for label in CITYSCAPES_LABELS]
+#Change unlabeled id from 255 to 19
+CITYSCAPES_IDS[-1] = 19
 CLASSES=20
 
 #----------ARGUMENTS----------#
@@ -199,7 +205,7 @@ with strategy.scope():
             title = title + '-' + str(args.momentum)
         print("The Learning Rate Range has been found")
         #Create the path for the image file
-        path = os.path.join('.', 'lrfinder_results', model_name, title + '.png')
+        path = os.path.join('.', 'logs', model_name, 'lrfinder_results', title + '.png')
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
         print("Plot the Loss")
