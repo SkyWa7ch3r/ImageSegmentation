@@ -37,6 +37,7 @@ parser.add_argument('-e',"--epochs", help="Set the number of Epochs", default=10
 parser.add_argument('--mixed-precision', help="Use Mixed Precision. WARNING: May cause memory leaks", action="store_true")
 parser.add_argument('-f','--lrfinder', help='Use the Learning Rate Finder on a model to determine the best learning rate range for said optimizer')
 parser.add_argument('--momentum', help='Only useful for lrfinder, adjusts momentum of an optimizer, if there is that option', type=float, default=0.0)
+parser.add_argument('--multi-worker', help='Use MultiWorkerMirroredStrategy Instead of Mirrored Strategy. WARNING: Assumes Use of SLURM due to main use of this on Pawsey Supercomputer Cluster', action='store_true')
 
 models = ['unet', 'bayes_segnet', 'deeplabv3+', 'fastscnn']
 optimizers = ['adadelta', 'adagrad', 'adam', 'adamax', 'ftrl', 'nadam', 'rmsprop', 'sgd', 'sgd_nesterov']
@@ -95,7 +96,48 @@ if args.mixed_precision:
     mixed_precision.set_policy(policy)
 
 #Set the strategy which will enable Multi-GPU
-strategy = tf.distribute.MirroredStrategy()
+if args.multi_worker:
+    #Get all the nmecessary values from environment variables
+    slurm_num_tasks = int(os.environ.get('SLURM_STEP_NUM_TASKS'))
+    slurm_gpus = int(os.environ.get('SLURM_GPUS_PER_NODE'))
+    slurm_gpus_per_task = int(os.environ.get('SLURM_GPUS_PER_TASK'))
+
+    class ModSlurm(tf.distribute.cluster_resolver.SlurmClusterResolver):
+            def _resolve_hostnames(self):
+                    """
+                    If you use shifter or singularity, you cant use scontrol
+                    within the container! Thus, a work around was made.
+                    While its quick and dirty, it works. Inside an sbatch
+                    simply run "scontrol show hostnames > nodes" before running
+                    the singularity container.
+
+                    Instead of running the command, it will read a file which has
+                    the stdout from the command instead.
+                    """
+                    #Read the file
+                    file = open("nodes","r")
+                    #Replace New Line Characters
+                    nodes = [node.replace('\n','') for node in file.readlines()]
+                    #Return the list of nodes
+                    return nodes
+
+    #Create a SlurmClusterResolver
+    cluster = ModSlurm({'worker' : slurm_num_tasks}, gpus_per_node=slurm_gpus, gpus_per_task=slurm_gpus_per_task)
+    #Create Strategy
+    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=cluster)
+    #Show status of strategy
+    print("\nUsing {} GPUs over {} nodes via MultiWorkerMirroredStrategy. Slurm Job {}\n".format(
+                                                                                                strategy.num_replicas_in_sync, 
+                                                                                                os.environ.get('SLURM_JOB_NUM_NODES'), 
+                                                                                                os.environ.get('SLURM_JOB_ID')
+                                                                                            )
+    )
+
+else:
+    #Get Strategy
+    strategy = tf.distribute.MirroredStrategy()
+    #Show status of Strategy
+    print("\nUsing {} GPUs via MirroredStrategy\n".format(strategy.num_replicas_in_sync))
 
 class csMeanIoU(keras.metrics.Metric):
     """
