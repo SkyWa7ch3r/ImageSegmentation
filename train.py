@@ -85,6 +85,7 @@ if args.momentum < 0:
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.mixed_precision import experimental as mixed_precision
+import json
 
 #Set Memory Growth to alleviate memory issues
 for gpu in tf.config.experimental.list_physical_devices('GPU'):
@@ -97,10 +98,6 @@ if args.mixed_precision:
 
 #Set the strategy which will enable Multi-GPU
 if args.multi_worker:
-    #Get all the nmecessary values from environment variables
-    slurm_num_tasks = int(os.environ.get('SLURM_STEP_NUM_TASKS'))
-    slurm_gpus = int(os.environ.get('SLURM_GPUS_PER_NODE'))
-    slurm_gpus_per_task = int(os.environ.get('SLURM_GPUS_PER_TASK'))
 
     class ModSlurm(tf.distribute.cluster_resolver.SlurmClusterResolver):
             def _resolve_hostnames(self):
@@ -122,7 +119,7 @@ if args.multi_worker:
                     return nodes
 
     #Create a SlurmClusterResolver
-    cluster = ModSlurm({'worker' : slurm_num_tasks}, gpus_per_node=slurm_gpus, gpus_per_task=slurm_gpus_per_task)
+    cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS')})
     #Create Strategy
     strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=cluster)
     #Show status of strategy
@@ -196,7 +193,8 @@ class csMeanIoU(keras.metrics.Metric):
 
 #With the Mirror Strategy 
 with strategy.scope():
-
+    if args.multi_worker:
+        batch_size = batch_size * int(os.environ.get('SLURM_JOB_NUM_NODES'))
     #----------CREATE DATASETS----------#
     train_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, classes=CLASSES)
     val_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, train=False, classes=CLASSES)
