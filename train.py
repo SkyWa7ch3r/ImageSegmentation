@@ -119,7 +119,7 @@ if args.multi_worker:
                     return nodes
 
     #Create a SlurmClusterResolver
-    cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS')})
+    cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS'))})
     #Create Strategy
     strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=cluster)
     #Show status of strategy
