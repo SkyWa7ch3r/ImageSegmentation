@@ -85,16 +85,10 @@ if args.momentum < 0:
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.mixed_precision import experimental as mixed_precision
-import json
 
 #Set Memory Growth to alleviate memory issues
 for gpu in tf.config.experimental.list_physical_devices('GPU'):
     tf.config.experimental.set_memory_growth(gpu, True)
- 
-#Change policy to fp16 to use Tensor Cores
-if args.mixed_precision:   
-    policy = tf.keras.mixed_precision.experimental.Policy('mixed_float16')
-    mixed_precision.set_policy(policy)
 
 #Set the strategy which will enable Multi-GPU
 if args.multi_worker:
@@ -135,6 +129,11 @@ else:
     strategy = tf.distribute.MirroredStrategy()
     #Show status of Strategy
     print("\nUsing {} GPUs via MirroredStrategy\n".format(strategy.num_replicas_in_sync))
+
+#Change policy to fp16 to use Tensor Cores
+if args.mixed_precision:   
+    policy = tf.keras.mixed_precision.experimental.Policy('mixed_float16')
+    mixed_precision.set_policy(policy)
 
 class csMeanIoU(keras.metrics.Metric):
     """
@@ -275,9 +274,9 @@ with strategy.scope():
         if not os.path.isdir(logs_dir):
             os.makedirs(logs_dir)
         if not os.path.isdir(csv_dir):
-            os.makedirs(csv_dir)
+            os.mkdir(csv_dir)
         if not os.path.isdir(images_dir):
-            os.makedirs(images_dir)
+            os.mkdir(images_dir)
 
         #Custom Callback to save a prediction every epoch
         class prediction_on_epoch(keras.callbacks.Callback):
