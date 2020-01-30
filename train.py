@@ -192,12 +192,16 @@ class csMeanIoU(keras.metrics.Metric):
 
 #With the Mirror Strategy 
 with strategy.scope():
-    if args.multi_worker:
-        batch_size = batch_size * int(os.environ.get('SLURM_JOB_NUM_NODES'))
     #----------CREATE DATASETS----------#
+    if args.multi_worker:
+        #Set Batch size to Global Batch Size
+        batch_size = batch_size * int(os.environ.get('SLURM_JOB_NUM_NODES'))
     train_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, classes=CLASSES)
     val_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, train=False, classes=CLASSES)
-
+    #If mutli-worker distribute dataset properly
+    if args.multi_worker:
+        train_ds = strategy.experimental_distribute_dataset(train_ds)
+        val_ds = strategy.experimental_distribute_dataset(val_ds)
     #----------CREATE MODEL AND BEGIN TRAINING
     time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
     #Depending on model chosen, get the right model and create the optimizer for it
@@ -209,7 +213,7 @@ with strategy.scope():
         optimizer = keras.optimizers.SGD(momentum=0.9, learning_rate=0.001)
     elif model_name == 'fastscnn':
         model = fast_scnn.model(input_size=target_size, num_classes=CLASSES)
-        optimizer = keras.optimizers.SGD(momentum=0.9, learning_rate=keras.optimizers.schedules.PolynomialDecay(0.045, 1000, power=0.9))
+        optimizer = keras.optimizers.SGD(momentum=0.9, learning_rate=keras.optimizers.schedules.PolynomialDecay(0.045, 1000, power=0.9, end_learning_rate=0.0045))
     elif model_name == 'deeplabv3+':  
         model = deeplabv3plus.model(input_size=target_size, num_classes=CLASSES)
         optimizer = keras.optimizers.SGD(learning_rate=tf.optimizers.schedules.PolynomialDecay(0.007, 1000, power=0.9))
