@@ -115,7 +115,7 @@ if args.multi_worker:
     #Create a SlurmClusterResolver
     cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS'))})
     #Create Strategy
-    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=cluster)
+    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(communication=tf.distribute.experimental.CollectiveCommunication.NCCL, cluster_resolver=cluster)
     #Show status of strategy
     print("\nUsing {} GPUs over {} nodes via MultiWorkerMirroredStrategy. Slurm Job {}\n".format(
                                                                                                 strategy.num_replicas_in_sync, 
@@ -198,10 +198,6 @@ with strategy.scope():
         batch_size = batch_size * int(os.environ.get('SLURM_JOB_NUM_NODES'))
     train_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, classes=CLASSES)
     val_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, train=False, classes=CLASSES)
-    #If mutli-worker distribute dataset properly
-    if args.multi_worker:
-        train_ds = strategy.experimental_distribute_dataset(train_ds)
-        val_ds = strategy.experimental_distribute_dataset(val_ds)
     #----------CREATE MODEL AND BEGIN TRAINING
     time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
     #Depending on model chosen, get the right model and create the optimizer for it
