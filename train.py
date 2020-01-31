@@ -57,10 +57,7 @@ else:
     sys.exit("ERROR: No valid path for Cityscapes Dataset given")
 #Now do the target size
 if args.target_size is None:
-    if model_name == 'fastscnn':
-        target_size = (512, 1024, 3)
-    else:
-        target_size = (1024, 1024, 3)
+    target_size = (1024, 2048, 3)
 else:
     target_size = tuple(int(i) for i in args.target_size.split(','))
 #Get the Batch Size
@@ -92,7 +89,6 @@ for gpu in tf.config.experimental.list_physical_devices('GPU'):
 
 #Set the strategy which will enable Multi-GPU
 if args.multi_worker:
-
     class ModSlurm(tf.distribute.cluster_resolver.SlurmClusterResolver):
             def _resolve_hostnames(self):
                     """
@@ -111,9 +107,17 @@ if args.multi_worker:
                     nodes = [node.replace('\n','') for node in file.readlines()]
                     #Return the list of nodes
                     return nodes
-
+    #SLURM GPU values
+    if os.environ.get('SLURM_GPUS_PER_NODE') == None:
+        gpus_per_node = 1
+    else:
+        gpus_per_node = int(os.environ.get('SLURM_GPUS_PER_NODE'))
+    if os.environ.get('SLURM_GPUS_PER_TASK') == None:
+        gpus_per_task = 1
+    else:
+        gpus_per_task = int(os.environ.get('SLURM_GPUS_PER_TASK'))
     #Create a SlurmClusterResolver
-    cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS'))})
+    cluster = ModSlurm({'worker' : int(os.environ.get('SLURM_STEP_NUM_TASKS'))}, gpus_per_node=gpus_per_node, gpus_per_task=gpus_per_task)
     #Create Strategy
     strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(communication=tf.distribute.experimental.CollectiveCommunication.NCCL, cluster_resolver=cluster)
     #Show status of strategy
