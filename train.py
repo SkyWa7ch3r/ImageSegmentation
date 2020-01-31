@@ -314,9 +314,16 @@ with strategy.scope():
             keras.callbacks.CSVLogger(csv_dir+'/log.csv'),
             keras.callbacks.TensorBoard(log_dir=logs_dir),
             keras.callbacks.ModelCheckpoint(logs_dir+'/weights-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}-'+time+'.hdf5', 'val_loss', mode='min', save_best_only=True),
-            prediction_on_epoch(target_size),
         ]
-
+        nodes_file = open('nodes', 'r')
+        first_node = nodes_file.readline().replace('\n','')
+        nodes_file.close()
+        #If multi-worker only do the file saving on the first node
+        if args.multi_worker:
+            if os.environ.get('SLURMD_NODENAME') == first_node:
+                callbacks.append(prediction_on_epoch(target_size))
+        else:
+            callbacks.append(prediction_on_epoch(target_size))  
         #Set the number of steps per epoch
         num_training = len(datasets.get_cityscapes_files(CITYSCAPES_ROOT, 'leftImg8bit', 'train', 'leftImg8bit'))
         num_validation = len(datasets.get_cityscapes_files(CITYSCAPES_ROOT, 'leftImg8bit', 'val', 'leftImg8bit'))
