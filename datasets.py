@@ -152,7 +152,7 @@ def parse_function(image, label, target_size=(1024, 1024, 3), training=True, cla
     #Return the image and label as tensors
     return image, label
 
-def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True, coarse=False, classes=19):
+def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True, coarse=False, classes=19, buffer_size=1000, options=None):
     if train and not coarse:
         images = get_cityscapes_files(cityscapes_root, 'leftImg8bit', 'train', 'leftImg8bit')
         labels = get_cityscapes_files(cityscapes_root, 'gtFine', 'train', 'labelTrainIds')
@@ -163,7 +163,7 @@ def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True,
     #Training Dataset
     ds = tf.data.Dataset.from_tensor_slices((images, labels))
     #Shuffle the data
-    ds = ds.shuffle(len(images))
+    ds = ds.shuffle(buffer_size)
     #Map the parsing function using partial to pass through arguments
     ds = ds.map(partial(parse_function, target_size=target_size, training=train, classes=classes), num_parallel_calls=NUM_THREADS)
     #Set the batch size
@@ -172,5 +172,7 @@ def create_dataset(cityscapes_root, batch_size, epochs, target_size, train=True,
     ds = ds.repeat(epochs)
     #Get the first batch ready for training
     ds = ds.prefetch(1)
-
+    #Set Dataset options
+    if options is not None:
+        ds = ds.with_options(options)
     return ds

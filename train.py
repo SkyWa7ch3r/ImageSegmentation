@@ -198,10 +198,26 @@ class csMeanIoU(keras.metrics.Metric):
 with strategy.scope():
     #----------CREATE DATASETS----------#
     if args.multi_worker:
-        #Set Batch size to Global Batch Size
-        batch_size = batch_size * int(os.environ.get('SLURM_JOB_NUM_NODES'))
-    train_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, classes=CLASSES)
-    val_ds = datasets.create_dataset(CITYSCAPES_ROOT, batch_size, epochs, target_size, train=False, classes=CLASSES)
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+    else:
+        options = None
+    
+    train_ds = datasets.create_dataset(
+        CITYSCAPES_ROOT, 
+        batch_size, epochs, 
+        target_size, 
+        classes = CLASSES,
+        options = options,
+    )
+    val_ds = datasets.create_dataset(
+        CITYSCAPES_ROOT, 
+        batch_size, epochs, 
+        target_size, 
+        train=False,
+        classes = CLASSES,
+        options = options,
+    )
     #----------CREATE MODEL AND BEGIN TRAINING
     time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
     #Depending on model chosen, get the right model and create the optimizer for it
