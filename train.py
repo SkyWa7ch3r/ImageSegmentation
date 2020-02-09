@@ -448,7 +448,7 @@ else:
     ]
     # If we are using a Learning Rate Schedule then use the appropriate callbacks
     if args.schedule == 'polynomial':
-        model.optimizer.learning_rate = args.min_lr
+        model.optimizer.learning_rate = args.max_lr
         schedule = polyDecay(args.min_lr, args.max_lr,
                              epochs, args.power, hvd.rank())
         callbacks.append(schedule)
