@@ -372,7 +372,7 @@ else:
                          image_to_save.astype(np.uint8), dpi=300)
 
     class polyDecay(keras.callbacks.Callback):
-        def __init__(self, max_lr, min_lr, steps, power, rank, warmup_epochs=3):
+        def __init__(self, min_lr, max_lr, steps, power, rank, warmup_epochs=3):
             self.max_lr = max_lr
             self.min_lr = min_lr
             self.steps = steps
