@@ -396,7 +396,7 @@ else:
                 # If its the first worker, print the new learning rate
                 if self.rank == 0:
                     print("Learning Rate has changed from {} to {}".format(
-                        previous, self.model.optimizer.learning_rate.numpy()))
+                        previous.numpy(), self.model.optimizer.learning_rate.numpy()))
 
     class cyclicLR(keras.callbacks.Callback):
         def __init__(self, min_lr, max_lr, cycle, rank, warmup_epochs=3):
@@ -426,7 +426,7 @@ else:
                 # If its the first worker, print the new learning rate
                 if self.rank == 0:
                     print("Learning Rate has changed from {} to {}".format(
-                        previous, self.model.optimizer.learning_rate.numpy()))
+                        previous.numpy(), self.model.optimizer.learning_rate.numpy()))
 
     # The callbacks  logs almost everything, and saves the best weights as the model trains, in theory last weights is best
     callbacks = [
