@@ -389,7 +389,7 @@ else:
                 # Get the previous learning rate
                 previous = self.model.optimizer.learning_rate
                 # Work out the decay
-                decay = (1 - epoch / self.steps) ^ (self.power)
+                decay = (1 - epoch / self.steps) ** (self.power)
                 # Change the current learning rate according to the decay and minimum and maximum learning rates
                 self.model.optimizer.learning_rate = (
                     (self.max_lr - self.min_lr) * decay) + self.min_lr
