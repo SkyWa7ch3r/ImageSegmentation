@@ -387,7 +387,7 @@ else:
                     'Optimizer must have a "learning_rate" attribute.')
             if epoch > self.warmup_epochs:
                 # Get the previous learning rate
-                previous = self.model.optimizer.learning_rate
+                previous = tf.identity(self.model.optimizer.learning_rate)
                 # Work out the decay
                 decay = (1 - epoch / self.steps) ** (self.power)
                 # Change the current learning rate according to the decay and minimum and maximum learning rates
@@ -416,7 +416,7 @@ else:
                     'Optimizer must have a "learning_rate" attribute.')
             if epoch > self.warmup_epochs:
                 # Get the previous learning rate
-                previous = self.model.optimizer.learning_rate
+                previous = tf.identity(self.model.optimizer.learning_rate)
                 # Get the new learning rate based on the direction we're going and the step size
                 self.model.optimizer.learning_rate = np.round(
                     previous + self.step_size*self.direction, decimals=self.round_to)
