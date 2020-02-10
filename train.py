@@ -231,9 +231,10 @@ if model_name == 'unet':
     if args.learning_rate:
         learning_rate = args.learning_rate*hvd.size()
     else:
-        learning_rate = 0.001*hvd.size()
+        learning_rate = 0.02*hvd.size()
     model = unet.model(input_size=target_size, num_classes=CLASSES)
-    optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
+    optimizer = keras.optimizers.SGD(
+        learning_rate=learning_rate, momentum=0.9, nesterov=True)
 elif model_name == 'bayes_segnet':
     if args.learning_rate:
         learning_rate = args.learning_rate*hvd.size()
