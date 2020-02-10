@@ -229,30 +229,30 @@ time = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
 # Depending on model chosen, get the right model and create the optimizer for it
 if model_name == 'unet':
     if args.learning_rate:
-        learning_rate = args.learning_rate
+        learning_rate = args.learning_rate*hvd.size()
     else:
-        learning_rate = 0.001
+        learning_rate = 0.001*hvd.size()
     model = unet.model(input_size=target_size, num_classes=CLASSES)
     optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
 elif model_name == 'bayes_segnet':
     if args.learning_rate:
-        learning_rate = args.learning_rate
+        learning_rate = args.learning_rate*hvd.size()
     else:
-        learning_rate = 0.001
+        learning_rate = 0.001*hvd.size()
     model = bayes_segnet.model(num_classes=CLASSES, input_size=target_size)
     optimizer = keras.optimizers.SGD(momentum=0.9, learning_rate=learning_rate)
 elif model_name == 'fastscnn':
     if args.learning_rate:
-        learning_rate = args.learning_rate
+        learning_rate = args.learning_rate*hvd.size()
     else:
-        learning_rate = 0.045
+        learning_rate = 0.045*hvd.size()
     model = fast_scnn.model(input_size=target_size, num_classes=CLASSES)
     optimizer = keras.optimizers.SGD(momentum=0.9, learning_rate=learning_rate)
 elif model_name == 'deeplabv3+':
     if args.learning_rate:
-        learning_rate = args.learning_rate
+        learning_rate = args.learning_rate*hvd.size()
     else:
-        learning_rate = 0.007
+        learning_rate = 0.007*hvd.size()
     model = deeplabv3plus.model(
         input_size=target_size, num_classes=CLASSES)
     optimizer = keras.optimizers.SGD(
@@ -333,12 +333,13 @@ else:
     logs_dir = os.path.join('.', 'logs', model_name, time)
     csv_dir = os.path.join(logs_dir, 'csv')
     images_dir = os.path.join(logs_dir, 'images')
-    if not os.path.isdir(logs_dir):
-        os.makedirs(logs_dir)
-    if not os.path.isdir(csv_dir):
-        os.mkdir(csv_dir)
-    if not os.path.isdir(images_dir):
-        os.mkdir(images_dir)
+    if hvd.rank() == 0:
+        if not os.path.isdir(logs_dir):
+            os.makedirs(logs_dir)
+        if not os.path.isdir(csv_dir):
+            os.mkdir(csv_dir)
+        if not os.path.isdir(images_dir):
+            os.mkdir(images_dir)
 
     # Custom Callback to save a prediction every epoch
     class prediction_on_epoch(keras.callbacks.Callback):
@@ -448,13 +449,13 @@ else:
     ]
     # If we are using a Learning Rate Schedule then use the appropriate callbacks
     if args.schedule == 'polynomial':
-        model.optimizer.learning_rate = args.max_lr
-        schedule = polyDecay(args.min_lr, args.max_lr,
+        model.optimizer.learning_rate = args.max_lr*hvd.size()
+        schedule = polyDecay(args.min_lr*hvd.size(), args.max_lr*hvd.size(),
                              epochs, args.power, hvd.rank())
         callbacks.append(schedule)
     elif args.schedule == 'cyclic':
-        model.optimizer.learning_rate = args.min_lr
-        schedule = cyclicLR(args.min_lr, args.max_lr, args.cycle, hvd.rank())
+        model.optimizer.learning_rate = args.min_lr*hvd.size()
+        schedule = cyclicLR(args.min_lr*hvd.size(), args.max_lr*hvd.size(), args.cycle, hvd.rank())
         callbacks.append(schedule)
     # If its the chief worker, add the logging callbacks
     if hvd.rank() == 0:
@@ -482,7 +483,7 @@ else:
     # Train!
     history = model.fit(
         train_ds,
-        epochs=epochs,
+        epochs=epochs // hvd.size(),
         steps_per_epoch=training_steps,
         validation_data=val_ds,
         validation_steps=validation_steps,
