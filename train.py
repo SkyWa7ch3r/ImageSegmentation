@@ -276,12 +276,14 @@ if args.lrfinder is not None:
         metrics=[keras.metrics.CategoricalAccuracy(name='accuracy')],
         experimental_run_tf_function=False,
     )
-    print("Finding Optimum Learning Rate Range")
+    if hvd.rank() == 0:
+        print("Finding Optimum Learning Rate Range")
     # Set the config for the lrfinder
     max_lr = 1e2
     epochs = 5
     num_steps = np.ceil(len(datasets.get_cityscapes_files(
         CITYSCAPES_ROOT, 'leftImg8bit', 'train', 'leftImg8bit')) / batch_size)
+    num_steps = np.ceil(num_steps / hvd.size())
     # Create the learning rate finder
     lrf = lrfinder.LearningRateFinder(model)
     callbacks = []
