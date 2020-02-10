@@ -279,7 +279,7 @@ if args.lrfinder is not None:
     if hvd.rank() == 0:
         print("Finding Optimum Learning Rate Range")
     # Set the config for the lrfinder
-    max_lr = 1e2
+    max_lr = 1e1
     epochs = 5
     num_steps = np.ceil(len(datasets.get_cityscapes_files(
         CITYSCAPES_ROOT, 'leftImg8bit', 'train', 'leftImg8bit')) / batch_size)
