@@ -85,14 +85,14 @@ def entry_block(inputs):
         sep_conv8, 728, 2, activation=False, name='entry_sep_conv9')
 
     # Fifth Convolution
-    conv5 = conv_layer(add1, 728, 1, 2, 'same',
+    conv5 = conv_layer(add2, 728, 1, 2, 'same',
                        activation=False, name='entry_skip_conv3')
 
     # Do a skip connection
     add3 = keras.layers.Add(name='entry_skip3')([sep_conv9, conv5])
 
     # That's the entry block finished, return the last add
-    return add3, relu_add1
+    return add3, relu_add2
 
 
 def middle_block(inputs, blockname):
@@ -114,7 +114,7 @@ def exit_block(inputs):
     sep_conv1 = sep_layer(inputs, 728, 1, name='exit_sep_conv1')
     sep_conv2 = sep_layer(sep_conv1, 1024, 1, name='exit_sep_conv2')
     sep_conv3 = sep_layer(sep_conv2, 1024, 2,
-                          name='exit_sep_conv1', activation=False)
+                          name='exit_sep_conv3', activation=False)
     # Skip Convolution
     conv1 = conv_layer(inputs, 1024, 1, 2, 'same',
                        activation=False, name='exit_skip_conv1')
@@ -163,7 +163,7 @@ def ASPP(inputs, depthwise=False, output_stride=16):
     # The Dilated Convolutions
     if depthwise:
         conv3x3_d6 = keras.layers.SeparableConv2D(
-            256, 3, strides=1, padding='same', dilation_rate=dilation_rates[0], name="ASPP_sep_conv3x3_d12")(inputs)
+            256, 3, strides=1, padding='same', dilation_rate=dilation_rates[0], name="ASPP_sep_conv3x3_d6")(inputs)
     else:
         conv3x3_d6 = keras.layers.Conv2D(
             256, 3, strides=1, padding='same', dilation_rate=dilation_rates[0], name="ASPP_conv3x3_d6")(inputs)
@@ -225,7 +225,7 @@ def model(input_size=(1024, 1024, 3), num_classes=19, depthwise=False, output_st
     # ASPP
     aspp = ASPP(xception, depthwise=depthwise, output_stride=output_stride)
     aspp_up = keras.layers.UpSampling2D(
-        size=(2, 2), interpolation='bilinear', name='decoder_ASPP_upsample')(aspp)
+        size=(4, 4), interpolation='bilinear', name='decoder_ASPP_upsample')(aspp)
     # Decoder Begins Here
     conv1x1 = keras.layers.Conv2D(
         48, 1, strides=1, padding='same', use_bias=False, name="decoder_conv1x1")(low_layer)
@@ -254,12 +254,12 @@ def model(input_size=(1024, 1024, 3), num_classes=19, depthwise=False, output_st
         'relu', name='decoder_conv2_relu')(norm2_decoder)
 
     # Do classification 1x1 layer
-    classification = keras.layers.Conv2D(num_classes, kernel_size=(1, 1), strides=(
-        1, 1), activation='softmax', name='Classification', dtype=tf.float32)(relu2_decoder)
     classification_up = keras.layers.UpSampling2D(size=(
-        4, 4), interpolation='bilinear', name="Classificaton_Upsample", dtype=tf.float32)(classification)
+        8, 8), interpolation='bilinear', name="Classificaton_Upsample", dtype=tf.float32)(relu2_decoder)
+    classification = keras.layers.Conv2D(num_classes, kernel_size=(1, 1), strides=(
+        1, 1), activation='softmax', name='Classification', dtype=tf.float32)(classification_up)
 
     # Create the model
-    model = keras.Model(inputs=inputs, outputs=classification_up)
+    model = keras.Model(inputs=inputs, outputs=classification)
     # Return the model
     return model

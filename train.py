@@ -254,7 +254,7 @@ elif model_name == 'deeplabv3+':
     else:
         learning_rate = 0.007*hvd.size()
     model = deeplabv3plus.model(
-        input_size=target_size, num_classes=CLASSES)
+        input_size=target_size, num_classes=CLASSES, depthwise=True)
     optimizer = keras.optimizers.SGD(
         learning_rate=learning_rate)
 # We are in LRFINDER mode
