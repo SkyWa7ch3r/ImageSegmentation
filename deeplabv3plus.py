@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import applications
 import numpy as np
 
 
@@ -208,20 +209,26 @@ def ASPP(inputs, depthwise=False, output_stride=16):
     return relu2
 
 
-def model(input_size=(1024, 1024, 3), num_classes=19, depthwise=False, output_stride=16):
-    # Input Layer
-    inputs = keras.Input(input_size, name='xception_input')
-    # Do the entry block, also returns the low layer for ASPP and Decoder
-    xception, low_layer = entry_block(inputs)
-    # Now do the middle block
-    for i in range(16):
-        blockname = 'middle_block{}'.format(i)
-        xception = middle_block(xception, blockname)
-    # Activate the last add
-    xception = keras.layers.Activation(
-        'relu', name='exit_block_relu_add')(xception)
-    # Do the exit block
-    xception = exit_block(xception)
+def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_stride=16, backbone='xception'):
+    if backbone == 'modified_xception':
+        # Input Layer
+        inputs = keras.Input(input_size, name='xception_input')
+        # Do the entry block, also returns the low layer for ASPP and Decoder
+        xception, low_layer = entry_block(inputs)
+        # Now do the middle block
+        for i in range(16):
+            blockname = 'middle_block{}'.format(i)
+            xception = middle_block(xception, blockname)
+        # Activate the last add
+        xception = keras.layers.Activation(
+            'relu', name='exit_block_relu_add')(xception)
+        # Do the exit block
+        xception = exit_block(xception)
+    elif backbone == 'xception':
+        xception_model = applications.Xception(weights='imagenet', include_top=False, input_shape=input_size, classes=20)
+        inputs = xception_model.layers[0].output 
+        low_layer = xception_model.get_layer('add_1').output
+        xception = xception_model.layers[-1].output
     # ASPP
     aspp = ASPP(xception, depthwise=depthwise, output_stride=output_stride)
     aspp_up = keras.layers.UpSampling2D(
