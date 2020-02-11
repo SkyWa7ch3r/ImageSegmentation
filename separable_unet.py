@@ -61,8 +61,7 @@ def model(num_classes=20, input_size=(1024, 2048, 3)):
     conv13 = conv_layer(merge2, 128, 3, separable=True)
     conv14 = conv_layer(conv13, 128, 3, separable=True)
 
-    up3 = conv_layer(UpSampling2D(size=(2, 2))(conv14),
-                     32, 2, separable=True, padding='same')
+    up3 = conv_layer(UpSampling2D(size=(2, 2))(conv14), 32, 2, separable=True)
     merge3 = concatenate([conv4, up3], axis=3)
     conv15 = conv_layer(merge3, 32, 3, separable=True)
     conv16 = conv_layer(conv15, 32, 3, separable=True)
