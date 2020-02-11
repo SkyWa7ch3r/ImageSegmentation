@@ -14,6 +14,7 @@ import os
 
 #----------IMPORT MODELS AND UTILITIES----------#
 import unet
+import separable_unet
 import bayes_segnet
 import deeplabv3plus
 import fast_scnn
@@ -38,8 +39,9 @@ parser = argparse.ArgumentParser(
     prog='train.py', description="Start training a semantic segmentation model")
 parser.add_argument(
     "-m", "--model",
-    help="Specify the model you wish to use: OPTIONS: unet, bayes_segnet, deeplabv3+, fastscnn",
-    choices=['unet', 'bayes_segnet', 'deeplabv3+', 'fastscnn'],
+    help="Specify the model you wish to use: OPTIONS: unet, separable_unet, bayes_segnet, deeplabv3+, fastscnn",
+    choices=['unet', 'bayes_segnet', 'deeplabv3+',
+             'fastscnn', 'separable_unet'],
     required=True)
 parser.add_argument(
     "-r", "--resume",
@@ -233,6 +235,13 @@ if model_name == 'unet':
     else:
         learning_rate = 0.01*hvd.size()
     model = unet.model(input_size=target_size, num_classes=CLASSES)
+    optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
+if model_name == 'separable_unet':
+    if args.learning_rate:
+        learning_rate = args.learning_rate*hvd.size()
+    else:
+        learning_rate = 0.001*hvd.size()
+    model = separable_unet.model(input_size=target_size, num_classes=CLASSES)
     optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
 elif model_name == 'bayes_segnet':
     if args.learning_rate:
