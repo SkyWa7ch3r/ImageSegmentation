@@ -251,15 +251,23 @@ def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_st
         name='decoder_concat')([aspp_up, relu1x1])
 
     # Do some Convolutions
-    conv1_decoder = keras.layers.Conv2D(
-        256, 3, strides=1, padding='same', name='decoder_conv1')(decode_concat)
+    if depthwise:
+        conv1_decoder = keras.layers.SeparableConv2D(
+            256, 3, strides=1, padding='same', name='decoder_conv1')(decode_concat)
+    else:
+        conv1_decoder = keras.layers.Conv2D(
+            256, 3, strides=1, padding='same', name='decoder_conv1')(decode_concat)
     norm1_decoder = keras.layers.BatchNormalization(
         name='decoder_conv1_batch_norm')(conv1_decoder)
     relu1_decoder = keras.layers.Activation(
         'relu', name='decoder_conv1_relu')(norm1_decoder)
 
-    conv2_decoder = keras.layers.Conv2D(
-        256, 3, strides=1, padding='same', name='decoder_conv2')(relu1_decoder)
+    if depthwise:
+        conv2_decoder = keras.layers.SeparableConv2D(
+            256, 3, strides=1, padding='same', name='decoder_conv2')(relu1_decoder)
+    else:
+        conv2_decoder = keras.layers.Conv2D(
+            256, 3, strides=1, padding='same', name='decoder_conv2')(relu1_decoder)
     norm2_decoder = keras.layers.BatchNormalization(
         name='decoder_conv2_batch_norm')(conv2_decoder)
     relu2_decoder = keras.layers.Activation(
