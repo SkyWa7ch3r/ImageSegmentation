@@ -262,7 +262,7 @@ def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_st
 
     # Do classification 1x1 layer
     classification_up = keras.layers.UpSampling2D(size=(
-        8, 8), interpolation='bilinear', name="Classificaton_Upsample", dtype=tf.float32)(relu2_decoder)
+        8, 8), interpolation='bilinear', name="Classificaton_Upsample")(relu2_decoder)
     classification = keras.layers.Conv2D(num_classes, kernel_size=(1, 1), strides=(
         1, 1), activation='softmax', name='Classification', dtype=tf.float32)(classification_up)
 
