@@ -453,7 +453,7 @@ else:
     if args.schedule == 'polynomial':
         model.optimizer.learning_rate = args.max_lr*hvd.size()
         schedule = polyDecay(args.min_lr*hvd.size(), args.max_lr*hvd.size(),
-                             epochs // (hvd.size()//2), args.power, hvd.rank())
+                             epochs // hvd.size(), args.power, hvd.rank())
         callbacks.append(schedule)
     elif args.schedule == 'cyclic':
         model.optimizer.learning_rate = args.min_lr*hvd.size()
@@ -486,7 +486,7 @@ else:
     # Train!
     history = model.fit(
         train_ds,
-        epochs=epochs // (hvd.size()//2),
+        epochs=epochs // hvd.size(),
         steps_per_epoch=training_steps,
         validation_data=val_ds,
         validation_steps=validation_steps,
