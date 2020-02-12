@@ -209,7 +209,7 @@ def ASPP(inputs, depthwise=False, output_stride=16):
     return relu2
 
 
-def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_stride=16, backbone='mobilenetv2'):
+def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_stride=16, backbone='xception'):
     if backbone == 'modified_xception':
         # Input Layer
         inputs = keras.Input(input_size, name='xception_input')
@@ -225,13 +225,19 @@ def model(input_size=(1024, 1024, 3), num_classes=20, depthwise=False, output_st
         # Do the exit block
         xception = exit_block(xception)
     elif backbone == 'xception':
-        xception = applications.Xception(weights='imagenet', include_top=False, input_shape=input_size, classes=20)
-        inputs = xception.layers[0].output 
+        xception = applications.Xception(
+            weights='imagenet', include_top=False, input_shape=input_size, classes=20)
+        for layer in xception.layers:
+            layer.trainable = False
+        inputs = xception.layers[0].output
         low_layer = xception.get_layer('add_1').output
+        low_layer.trainable = True
         previous = xception.layers[-1].output
+        previous.trainable = True
     elif backbone == 'mobilenetv2':
-        mobilenet = applications.MobileNetV2(weights='imagenet', include_top=False, input_shape=input_size, classes=20)
-        inputs = mobilenet.layers[0].output 
+        mobilenet = applications.MobileNetV2(
+            weights='imagenet', include_top=False, input_shape=input_size, classes=20)
+        inputs = mobilenet.layers[0].output
         low_layer = mobilenet.get_layer('block_3_depthwise').output
         previous = mobilenet.layers[-1].output
     # ASPP

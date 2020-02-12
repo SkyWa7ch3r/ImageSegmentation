@@ -242,7 +242,8 @@ if model_name == 'separable_unet':
     else:
         learning_rate = 0.003*hvd.size()
     model = separable_unet.model(input_size=target_size, num_classes=CLASSES)
-    optimizer = keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9, nesterov=True)
+    optimizer = keras.optimizers.SGD(
+        learning_rate=learning_rate, momentum=0.9, nesterov=True)
 elif model_name == 'bayes_segnet':
     if args.learning_rate:
         learning_rate = args.learning_rate*hvd.size()
@@ -263,7 +264,7 @@ elif model_name == 'deeplabv3+':
     else:
         learning_rate = 0.007*hvd.size()
     model = deeplabv3plus.model(
-        input_size=target_size, num_classes=CLASSES, depthwise=True)
+        input_size=target_size, num_classes=CLASSES, depthwise=True, backbone='xception')
     optimizer = keras.optimizers.SGD(
         learning_rate=learning_rate)
 # We are in LRFINDER mode
