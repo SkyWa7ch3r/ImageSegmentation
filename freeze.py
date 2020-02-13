@@ -25,6 +25,7 @@ def keras_to_uff(model_choice, weights):
     Reference for this python file:
     https://devtalk.nvidia.com/default/topic/1028464/jetson-tx2/converting-tf-model-to-tensorrt-uff-format/
     """
+    K.set_learning_phase(0)
     if model_choice == 'fastscnn':
         model = fast_scnn.model(num_classes=20, input_size=(1024, 2048, 3))
         input_size = '1024x2048'
@@ -41,7 +42,7 @@ def keras_to_uff(model_choice, weights):
     model.load_weights(weights)
     # Plot the model for visual purposes in case anyone asks what you used
     tf.keras.utils.plot_model(
-        model, to_file=os.path.join('./results', model_choice, model_choice+'.png'), show_shapes=True, dpi=300)
+        model, to_file=os.path.join('./results', model_choice, model_choice+'.png'), show_shapes=True)
     # Get the outputs
     outputs = []
     for output in model.outputs:
@@ -51,7 +52,6 @@ def keras_to_uff(model_choice, weights):
         './results', model_choice, model_choice + '_' + input_size + '.pb')
 
     # Let's begin
-    K.set_learning_phase(0)
     session = K.get_session()
     # Get the graph definition and remove training nodes, ignore deprecation warnings here...
     graph_def = tf.graph_util.convert_variables_to_constants(
