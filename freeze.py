@@ -51,6 +51,7 @@ def keras_to_uff(model_choice, weights):
         './results', model_choice, model_choice + '_' + input_size + '.pb')
 
     # Let's begin
+    K.set_learning_phase(0)
     session = K.get_session()
     # Get the graph definition and remove training nodes, ignore deprecation warnings here...
     graph_def = tf.graph_util.convert_variables_to_constants(
