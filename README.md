@@ -7,58 +7,60 @@ Semantic Segmentation or Pixel-based Labelling is the process of automatically a
 I will be wanting to train at full resolution of the cityscapes dataset which is 1024x2048px, a rather high resolution for many architectures. This will no doubt challenge the Xavier's capbilities. This will also highlight the differences between current models and the older models.
 
 ## Using train.py
-python train.py --help
-usage: train.py [-h] -m {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}
-                [-r RESUME] [-p PATH] [-c] [-t TARGET_SIZE] [-b BATCH]
-                [-e EPOCHS] [--mixed-precision]
-                [-f {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}]
-                [--schedule {polynomial,cyclic}] [--momentum MOMENTUM]
-                [-l LEARNING_RATE] [--max-lr MAX_LR] [--min-lr MIN_LR]
-                [--power POWER] [--cycle CYCLE]
-
-Start training a semantic segmentation model
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -m {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}, --model {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}
-                        Specify the model you wish to use: OPTIONS: unet,
-                        separable_unet, bayes_segnet, deeplabv3+, fastscnn
-  -r RESUME, --resume RESUME
-                        Resume the training, specify the weights file path of
-                        the format weights-[epoch]-[val-acc]-[val-
-                        loss]-[datetime].hdf5
+<pre>
+python train.py --help<br>
+usage: train.py [-h] -m {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet} <br>
+                [-r RESUME] [-p PATH] [-c] [-t TARGET_SIZE] [-b BATCH]<br>
+                [-e EPOCHS] [--mixed-precision]<br>
+                [-f {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}]<br>
+                [--schedule {polynomial,cyclic}] [--momentum MOMENTUM]<br>
+                [-l LEARNING_RATE] [--max-lr MAX_LR] [--min-lr MIN_LR]<br>
+                [--power POWER] [--cycle CYCLE]<br>
+<br>
+Start training a semantic segmentation model<br>
+<br>
+optional arguments:<br>
+  -h, --help            show this help message and exit<br>
+  -m {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}, --model {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}<br>
+                        Specify the model you wish to use: OPTIONS: unet,<br>
+                        separable_unet, bayes_segnet, deeplabv3+, fastscnn<br>
+  -r RESUME, --resume RESUME<br>
+                        Resume the training, specify the weights file path of<br>
+                        the format weights-[epoch]-[val-acc]-[val-<br>
+                        loss]-[datetime].hdf5<br>
   -p PATH, --path PATH  Specify the root folder for cityscapes dataset, if not
                         used looks for CITYSCAPES_DATASET environment variable
-  -c, --coarse          Use the coarse images
-  -t TARGET_SIZE, --target-size TARGET_SIZE
-                        Set the image size for training, should be a elements
-                        of a tuple x,y,c
-  -b BATCH, --batch BATCH
-                        Set the batch size
-  -e EPOCHS, --epochs EPOCHS
-                        Set the number of Epochs
-  --mixed-precision     Use Mixed Precision. WARNING: May cause memory leaks
-  -f {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}, --lrfinder {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}
-                        Use the Learning Rate Finder on a model to determine
-                        the best learning rate range for said optimizer
-  --schedule {polynomial,cyclic}
-                        Set a Learning Rate Schedule, here either Polynomial
-                        Decay (polynomial) or Cyclic Learning Rate (cyclic) is
-                        Available
-  --momentum MOMENTUM   Only useful for lrfinder, adjusts momentum of an
-                        optimizer, if there is that option
-  -l LEARNING_RATE, --learning-rate LEARNING_RATE
-                        Set the learning rate
-
-schedule:
-  Arguments for the Learning Rate Scheduler
-
-  --max-lr MAX_LR       The maximum learning rate during training
-  --min-lr MIN_LR       The minimum learning rate during training
-  --power POWER         The power used in Polynomial Decay
-  --cycle CYCLE         The length of cycle used for Cyclic Learning Rates
-  
+  -c, --coarse          Use the coarse images<br>
+  -t TARGET_SIZE, --target-size TARGET_SIZE<br>
+                        Set the image size for training, should be a elements<br>
+                        of a tuple x,y,c<br>
+  -b BATCH, --batch BATCH<br>
+                        Set the batch size<br>
+  -e EPOCHS, --epochs EPOCHS<br>
+                        Set the number of Epochs<br>
+  --mixed-precision     Use Mixed Precision. WARNING: May cause memory leaks<br>
+  -f {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}, --lrfinder <br>{adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd,sgd_nesterov}<br>
+                        Use the Learning Rate Finder on a model to determine<br>
+                        the best learning rate range for said optimizer<br>
+  --schedule {polynomial,cyclic}<br>
+                        Set a Learning Rate Schedule, here either Polynomial<br>
+                        Decay (polynomial) or Cyclic Learning Rate (cyclic) is<br>
+                        Available<br>
+  --momentum MOMENTUM   Only useful for lrfinder, adjusts momentum of an<br>
+                        optimizer, if there is that option<br>
+  -l LEARNING_RATE, --learning-rate LEARNING_RATE<br>
+                        Set the learning rate<br>
+<br>
+schedule:<br>
+  Arguments for the Learning Rate Scheduler<br>
+<br>
+  --max-lr MAX_LR       The maximum learning rate during training<br>
+  --min-lr MIN_LR       The minimum learning rate during training<br>
+  --power POWER         The power used in Polynomial Decay<br>
+  --cycle CYCLE         The length of cycle used for Cyclic Learning Rates<br>
+</pre>
 ## Using Predict
+<pre>
 python predict.py
 usage: predict [-h] -m {unet,bayes_segnet,deeplabv3+,fastscnn,separable_unet}
                [-w WEIGHTS] [-p PATH] [-r RESULTS_PATH] [-c] [-t TARGET_SIZE]
@@ -83,8 +85,9 @@ optional arguments:
                         of a tuple x,y,c
   --backbone {mobilenetv2,xception}
                         The backbone for the deeplabv3+ model
-                        
+</pre>                        
 ## Using convert_to_onnx
+<pre>
 python convert_to_onnx.py --help
 usage: convert_to_onnx.py [-h] [-m {fastscnn,deeplabv3+,separable_unet}]
                           [-w WEIGHTS_FILE]
@@ -95,7 +98,7 @@ optional arguments:
                         Model to convert to uff
   -w WEIGHTS_FILE, --weights-file WEIGHTS_FILE
                         The weights the model will use in the uff file
-                        
+</pre>                        
 ### Convert_to_ONNX
 Please ensure that this is converted on the Jetson Xavier for best results. Which at this time needed to use Tensorflow 1.15.0 and TensorRT 6, although I'm still trying to work through issues with using due to the restrictions on TensorFlow version and TensorRT version.
 
